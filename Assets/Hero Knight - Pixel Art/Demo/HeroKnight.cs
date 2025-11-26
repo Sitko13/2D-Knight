@@ -154,7 +154,7 @@ public class HeroKnight : MonoBehaviour
         }
 
         // Block
-        else if (Input.GetMouseButtonDown(1) && !m_rolling)
+        else if (Input.GetKeyDown("m") && !m_rolling)
         {
             m_animator.SetTrigger("Block");
             m_animator.SetBool("IdleBlock", true);
