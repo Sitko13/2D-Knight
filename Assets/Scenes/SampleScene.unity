@@ -2083,7 +2083,7 @@ GameObject:
   - component: {fileID: 811451073}
   m_Layer: 6
   m_Name: Ground
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7861,7 +7861,7 @@ GameObject:
   - component: {fileID: 1607239933}
   m_Layer: 0
   m_Name: InvisibleWall_Left
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8630,7 +8630,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413529789942519730, guid: a4b4a6d32bcb19248a754d6602ffc7e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.243
+      value: 216.5
       objectReference: {fileID: 0}
     - target: {fileID: 8413529789942519730, guid: a4b4a6d32bcb19248a754d6602ffc7e4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -8743,6 +8743,37 @@ Transform:
   - {fileID: 86183176}
   - {fileID: 2129832149}
   m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2060343572
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2060343573}
+  m_Layer: 7
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2060343573
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060343572}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.54, y: 0.19, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2129832149}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2085201308
 GameObject:
@@ -9315,8 +9346,9 @@ GameObject:
   - component: {fileID: 2129832152}
   - component: {fileID: 2129832151}
   - component: {fileID: 2129832150}
+  - component: {fileID: 2129832156}
   m_Layer: 7
-  m_Name: Enemy (2)
+  m_Name: BigBoss
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9331,12 +9363,13 @@ Transform:
   m_GameObject: {fileID: 2129832148}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.82, y: -1.46, z: 0}
+  m_LocalPosition: {x: 225.6, y: -1.5, z: 0}
   m_LocalScale: {x: 1.58, y: 1.64, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1953064124}
   - {fileID: 480044799}
+  - {fileID: 2060343573}
   m_Father: {fileID: 2017516936}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2129832150
@@ -9363,8 +9396,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3eb9aa7183709da429076edc5294507b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CodeMonkey_HealthSystem::CodeMonkey.HealthSystemCM.HealthSystemComponent
-  healthAmountMax: 100
-  startingHealthAmount: 100
+  healthAmountMax: 500
+  startingHealthAmount: 500
 --- !u!61 &2129832152
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -9518,6 +9551,23 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2129832156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2129832148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dfac5d7ecd043049937e591bad7bad1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CodeMonkey_HealthSystem::BigBossController
+  fireballPrefab: {fileID: 8153063133941076004, guid: b90b51b0ad56ef7429a7b20ffd9ecdf8, type: 3}
+  firePoint: {fileID: 2060343573}
+  attackInterval: 5
+  shootAtPlayer: 0
+  fixedDirection: {x: -5.78, y: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
