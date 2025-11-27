@@ -6,9 +6,9 @@ public class GameManager : MonoBehaviour {
     public static GameManager Instance;
     
     [SerializeField] private GameObject gameOverPanel;
+    private bool isGameOver = false;
     
     void Awake() {
-        // Singleton pattern
         if (Instance == null) {
             Instance = this;
         } else {
@@ -17,26 +17,44 @@ public class GameManager : MonoBehaviour {
     }
     
     public void ShowGameOver() {
-        Debug.Log("Game Over!");
+        if (isGameOver) return;
+        isGameOver = true;
         
-        // Zastav hru
-        Time.timeScale = 0f;
+        Debug.Log("Game Over!");
         
         // Zobraz Game Over panel
         if (gameOverPanel != null) {
             gameOverPanel.SetActive(true);
         }
+        
+        // Vypni pohyb hráča - VŠEOBECNEJŠÍ SPÔSOB
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null) {
+            // Vypni VŠETKY MonoBehaviour scripty okrem Animatora
+            MonoBehaviour[] scripts = player.GetComponents<MonoBehaviour>();
+            foreach (var script in scripts) {
+                if (!(script is Animator)) {
+                    script.enabled = false;
+                }
+            }
+            
+            // Zastav fyziku
+            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+            if (rb != null) {
+                rb.linearVelocity = Vector2.zero; // OPRAVENÉ: linearVelocity
+                rb.bodyType = RigidbodyType2D.Kinematic;
+            }
+        }
     }
     
     public void RestartGame() {
-        // Obnov čas
         Time.timeScale = 1f;
-        
-        // Reštartuj scénu
+        isGameOver = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
     public void QuitGame() {
+        Time.timeScale = 1f;
         Application.Quit();
         Debug.Log("Quit game");
     }
