@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour {
         
         Debug.Log("Game Over!");
         
-        // NOVÉ: Pripočítaj smrť
+        // Pripočítaj smrť
         if (DeathCounter.Instance != null) {
             DeathCounter.Instance.AddDeath();
         }
@@ -51,12 +51,13 @@ public class GameManager : MonoBehaviour {
     public void RestartGame() {
         Time.timeScale = 1f;
         isGameOver = false;
+    
+        
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     
     public void QuitGame() {
         Time.timeScale = 1f;
         Application.Quit();
-        Debug.Log("Quit game");
     }
 }
