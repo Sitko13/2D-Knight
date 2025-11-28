@@ -22,15 +22,17 @@ public class GameManager : MonoBehaviour {
         
         Debug.Log("Game Over!");
         
-        // Zobraz Game Over panel
+        // NOVÉ: Pripočítaj smrť
+        if (DeathCounter.Instance != null) {
+            DeathCounter.Instance.AddDeath();
+        }
+        
         if (gameOverPanel != null) {
             gameOverPanel.SetActive(true);
         }
         
-        // Vypni pohyb hráča - VŠEOBECNEJŠÍ SPÔSOB
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null) {
-            // Vypni VŠETKY MonoBehaviour scripty okrem Animatora
             MonoBehaviour[] scripts = player.GetComponents<MonoBehaviour>();
             foreach (var script in scripts) {
                 if (!(script is Animator)) {
@@ -38,10 +40,9 @@ public class GameManager : MonoBehaviour {
                 }
             }
             
-            // Zastav fyziku
             Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
             if (rb != null) {
-                rb.linearVelocity = Vector2.zero; // OPRAVENÉ: linearVelocity
+                rb.linearVelocity = Vector2.zero;
                 rb.bodyType = RigidbodyType2D.Kinematic;
             }
         }
