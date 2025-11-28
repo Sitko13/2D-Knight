@@ -5,7 +5,7 @@ public class Fireball : MonoBehaviour {
     
     [SerializeField] private float speed = 8f;
     [SerializeField] private int damage = 30;
-    [SerializeField] private float lifetime = 5f; // Zničí sa po 5 sekundách
+    [SerializeField] private float lifetime = 2f; // Zničí sa po 5 sekundách
     
     private Vector2 direction;
     
