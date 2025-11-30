@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using CodeMonkey.HealthSystemCM; // DÔLEŽITÉ: Musí byť pridané pre prístup k HealthSystem
+using CodeMonkey.HealthSystemCM;
 
 public class HeroKnight : MonoBehaviour
 {
@@ -28,7 +28,7 @@ public class HeroKnight : MonoBehaviour
     private float m_rollDuration = 8.0f / 14.0f;
     private float m_rollCurrentTime;
 
-    // === NOVÉ PREMENNÉ PRE ÚTOK HRDINU ===
+    // === ATTACK SETTINGS ===
     [Header("Attack Settings")]
     [Tooltip("Bod, z ktorého vychádza útok (prázdny GameObject).")]
     public Transform attackPoint;
@@ -39,11 +39,23 @@ public class HeroKnight : MonoBehaviour
     [Tooltip("Vrstva, na ktorej sa nachádzajú nepriatelia.")]
     public LayerMask enemyLayers;
 
-    // === NOVÉ PREMENNÉ PRE ZVUKY ===
+    // === SOUND SETTINGS ===
     [Header("Sound Settings")]
     [Tooltip("Zvuk pri útoku.")]
     [SerializeField] private AudioClip attackSound;
     private AudioSource audioSource;
+
+    // === MOBILE CONTROLS ===
+    [Header("Mobile Controls")]
+    [Tooltip("Ak je true, použije mobile ovládanie (joystick + buttony)")]
+    public bool useMobileControls = false;
+    
+    [Tooltip("Priradí Fixed Joystick alebo Floating Joystick z scény")]
+    public FixedJoystick joystick; // Alebo použite FloatingJoystick
+    
+    private bool mobileJumpPressed = false;
+    private bool mobileAttackPressed = false;
+    private bool mobileRollPressed = false;
 
     // Use this for initialization
     void Start()
@@ -88,8 +100,27 @@ public class HeroKnight : MonoBehaviour
             m_animator.SetBool("Grounded", m_grounded);
         }
 
-        // -- Handle input and movement --
-        float inputX = Input.GetAxis("Horizontal");
+        // === HANDLE INPUT (Klávesnica + Mobile) ===
+        float inputX;
+        
+        if (useMobileControls)
+        {
+            // Mobile: použije joystick
+            if (joystick != null)
+            {
+                inputX = joystick.Horizontal; // Vracia hodnotu od -1 (vľavo) do 1 (vpravo)
+            }
+            else
+            {
+                inputX = 0f;
+                Debug.LogWarning("Joystick nie je priradený k HeroKnight!");
+            }
+        }
+        else
+        {
+            // PC: klávesnica (A/D alebo šípky)
+            inputX = Input.GetAxis("Horizontal");
+        }
 
         // Swap direction of sprite depending on walk direction
         if (inputX > 0)
@@ -126,13 +157,11 @@ public class HeroKnight : MonoBehaviour
         else if (Input.GetKeyDown("k") && !m_rolling)
             m_animator.SetTrigger("Hurt");
 
-        //Attack
-        // Útočí, keď klikneme myšou, nie je v rolle a od posledného útoku prešlo 0.25 sekundy
-        else if (Input.GetMouseButtonDown(0) && m_timeSinceAttack > 0.25f && !m_rolling)
+        // === ATTACK (Myš + Mobile button) ===
+        bool attackInput = Input.GetMouseButtonDown(0) || mobileAttackPressed;
+        
+        if (attackInput && m_timeSinceAttack > 0.25f && !m_rolling)
         {
-            // LOG 1: Kontrola, či sa vôbec dostaneme do sekcie útoku (malo by sa objaviť v konzole po každom kliknutí)
-            Debug.Log("LOG 1: Útok spustil Animáciu.");
-
             m_currentAttack++;
 
             // Loop back to one after third attack
@@ -146,11 +175,14 @@ public class HeroKnight : MonoBehaviour
             // Call one of three attack animations "Attack1", "Attack2", "Attack3"
             m_animator.SetTrigger("Attack" + m_currentAttack);
 
-            // NOVÉ: Prehraj attack zvuk
+            // Prehraj attack zvuk
             PlayAttackSound();
 
             // Reset timer
             m_timeSinceAttack = 0.0f;
+            
+            // Reset mobile flag
+            mobileAttackPressed = false;
         }
 
         // Block
@@ -162,23 +194,33 @@ public class HeroKnight : MonoBehaviour
         else if (Input.GetMouseButtonUp(1))
             m_animator.SetBool("IdleBlock", false);
 
-        // Roll
-        else if (Input.GetKeyDown("left shift") && !m_rolling && !m_isWallSliding)
+        // === ROLL (Shift + Mobile button) ===
+        bool rollInput = Input.GetKeyDown("left shift") || mobileRollPressed;
+        
+        if (rollInput && !m_rolling && !m_isWallSliding)
         {
             m_rolling = true;
             m_animator.SetTrigger("Roll");
-            m_rollCurrentTime = 0; // Reset roll timer
+            m_rollCurrentTime = 0;
             m_body2d.linearVelocity = new Vector2(m_facingDirection * m_rollForce, m_body2d.linearVelocity.y);
+            
+            // Reset mobile flag
+            mobileRollPressed = false;
         }
 
-        //Jump
-        else if (Input.GetKeyDown("space") && m_grounded && !m_rolling)
+        // === JUMP (Space + Mobile button) ===
+        bool jumpInput = Input.GetKeyDown("space") || mobileJumpPressed;
+        
+        if (jumpInput && m_grounded && !m_rolling)
         {
             m_animator.SetTrigger("Jump");
             m_grounded = false;
             m_animator.SetBool("Grounded", m_grounded);
             m_body2d.linearVelocity = new Vector2(m_body2d.linearVelocity.x, m_jumpForce);
             m_groundSensor.Disable(0.2f);
+            
+            // Reset mobile flag
+            mobileJumpPressed = false;
         }
 
         //Run
@@ -200,7 +242,7 @@ public class HeroKnight : MonoBehaviour
     }
 
     // ===============================================
-    // ==== NOVÁ METÓDA PRE PREHRÁVANIE ZVUKU ====
+    // ==== METÓDY PRE PREHRÁVANIE ZVUKU ====
     // ===============================================
     
     void PlayAttackSound()
@@ -212,14 +254,33 @@ public class HeroKnight : MonoBehaviour
     }
 
     // ===============================================
-    // ==== METÓDA PRE SPÔSOBOVANIE POŠKODENIA (Volaná cez Animation Event) ====
+    // ==== PUBLIC METÓDY PRE MOBILE TLAČIDLÁ ====
+    // ===============================================
+    
+    // Volá sa z JUMP buttonu (OnClick)
+    public void OnJumpButton()
+    {
+        mobileJumpPressed = true;
+    }
+    
+    // Volá sa z ATTACK buttonu (OnClick)
+    public void OnAttackButton()
+    {
+        mobileAttackPressed = true;
+    }
+    
+    // Volá sa z ROLL buttonu (voliteľné)
+    public void OnRollButton()
+    {
+        mobileRollPressed = true;
+    }
+
+    // ===============================================
+    // ==== METÓDA PRE SPÔSOBOVANIE POŠKODENIA (Animation Event) ====
     // ===============================================
 
     public void AttackDamage()
     {
-        // LOG 2: Kontrola, či sa táto funkcia vôbec zavolala (z Animation Eventu)
-        Debug.Log("LOG 2: Animation Event bol úspešne spustený. Hľadáme nepriateľov...");
-
         // Kontrola, či je AttackPoint nastavený v Inspectore
         if (attackPoint == null)
         {
@@ -241,8 +302,7 @@ public class HeroKnight : MonoBehaviour
                 // Aplikuj poškodenie
                 enemyHealthComp.GetHealthSystem().Damage(attackDamage);
 
-                // LOG 3: Kontrola úspešného zásahu (ak sa táto správa objaví, útok funguje!)
-                Debug.Log("LOG 3: Hrdina zasiahol nepriateľa: " + enemy.name + " za " + attackDamage);
+                Debug.Log("Hrdina zasiahol nepriateľa: " + enemy.name + " za " + attackDamage + " damage");
             }
         }
     }
@@ -261,7 +321,10 @@ public class HeroKnight : MonoBehaviour
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
     }
 
-    // Animation Events (Existujúce)
+    // ===============================================
+    // ==== ANIMATION EVENTS (Existujúce) ====
+    // ===============================================
+    
     // Called in slide animation.
     void AE_SlideDust()
     {
